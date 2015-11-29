@@ -29,7 +29,7 @@ public class SoundMsgHandler extends Handler{
             if (msg.what == MY_MSG) {
 
 
-                mainActivity.mStatusView.setText(" "+msg.obj);
+                mainActivity.mStatusView.setText((String)msg.obj);
                 mainActivity.currentDecibels = (double) msg.obj;
             } else {
 
