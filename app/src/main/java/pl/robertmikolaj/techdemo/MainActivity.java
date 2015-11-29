@@ -41,17 +41,19 @@ import java.util.List;
 
 import pl.robertmikolaj.techdemo.helper.CameraPreview;
 import pl.robertmikolaj.techdemo.helper.MeasurmentEngine;
+import pl.robertmikolaj.techdemo.helper.SoundMsgHandler;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     Camera camera = null;
     static final int MY_MSG = 1;
-    static final int ERROR_MSG = -1;
+
     FloatingActionButton fab = null;
-    Context context;
-    TextView mStatusView;
+    public Context context;
+    public TextView mStatusView;
     MeasurmentEngine mEngine;
-    double currentDecibels = 0;
-    public Handler mhandle = new Handler(){
+    public double currentDecibels = 0;
+    SoundMsgHandler handler;
+ /*   public Handler mhandle = new Handler(){
                 @Override
         public void handleMessage(Message msg) {
            if(msg.what == MY_MSG) {
@@ -66,7 +68,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
            }
         }
 
-    };
+    };*/
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,10 +81,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         FrameLayout previewContainer = (FrameLayout) findViewById(R.id.camera_container);
         fab = (FloatingActionButton) findViewById(R.id.fab);
         mStatusView = (TextView) findViewById(R.id.status_view);
+        handler = new SoundMsgHandler(this);
         previewContainer.addView(cameraPreview);
         fab.setOnClickListener(this);
         startMeter();
     }
+
+
 
     @Override
     public void onResume() {
@@ -97,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onPause() {
 
-this.finish();
+        this.finish();
         stopMeter();
         camera.lock();
         super.onPause();
@@ -134,7 +140,7 @@ this.finish();
     }
 
     public void startMeter() {
-        mEngine = new MeasurmentEngine(mhandle, context);
+        mEngine = new MeasurmentEngine(handler, context);
     }
     public void stopMeter() {
         mEngine.stopEngine();
