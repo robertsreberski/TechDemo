@@ -1,7 +1,10 @@
 package pl.robertmikolaj.techdemo;
 
 import android.Manifest;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,6 +20,7 @@ import android.hardware.camera2.CameraManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
@@ -40,6 +44,7 @@ import java.io.IOException;
 import java.util.List;
 
 import pl.robertmikolaj.techdemo.helper.CameraPreview;
+import pl.robertmikolaj.techdemo.helper.GeolocationService;
 import pl.robertmikolaj.techdemo.helper.MeasurmentEngine;
 import pl.robertmikolaj.techdemo.helper.SoundMsgHandler;
 
@@ -53,22 +58,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     MeasurmentEngine mEngine;
     public double currentDecibels = 0;
     SoundMsgHandler handler;
- /*   public Handler mhandle = new Handler(){
-                @Override
-        public void handleMessage(Message msg) {
-           if(msg.what == MY_MSG) {
-               mStatusView.setText(" " + msg.obj);
-               currentDecibels = (double) msg.obj;
-           }else {
+    GeolocationService mService;
+    boolean mBound = false;
 
-               Toast.makeText(
-                       context,
-                       "Error " + msg.obj, Toast.LENGTH_LONG).show();
-               stopMeter();
-           }
-        }
-
-    };*/
 
 
     @Override
@@ -85,9 +77,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         previewContainer.addView(cameraPreview);
         fab.setOnClickListener(this);
         startMeter();
+
     }
 
+    @Override
+    public void onStart(){
+        super.onStart();
 
+// PAMIETAC zeby sprawdzac zawsze if(mbound)!!!!!!
+        Intent intent = new Intent(this, GeolocationService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        if(mBound) {
+            mService.startLocating();
+        }
+    }
 
     @Override
     public void onResume() {
@@ -107,7 +110,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         stopMeter();
         camera.lock();
         super.onPause();
-
+        if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
+        }
 
     }
 
@@ -117,7 +123,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.finish();
         stopMeter();
         super.onStop();
-
+        if(mBound) {
+            mService.stopLocating();
+        }
     }
 
     @Override
@@ -162,7 +170,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         final Double pTakenDecibels = currentDecibels;
-        camera.takePicture(null, null, new Camera.PictureCallback() {
+        if(mBound){
+            Toast.makeText(getApplicationContext(), Double.toString(mService.getCurrentLocation().getLatitude()), Toast.LENGTH_SHORT).show();
+        }
+       /* camera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 Bitmap bitmap;
@@ -190,6 +201,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(getApplicationContext(), "Photo saved", Toast.LENGTH_SHORT).show();
                 camera.startPreview();
             }
-        });
+        });*/
     }
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            GeolocationService.LocalBinder binder = (GeolocationService.LocalBinder) service;
+            mService = binder.getService();
+            mBound = true;
+            mService.startLocating();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
 }
