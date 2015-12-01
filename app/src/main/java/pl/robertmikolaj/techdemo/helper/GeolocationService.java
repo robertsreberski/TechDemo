@@ -134,14 +134,14 @@ public class GeolocationService extends Service {
 
     public class LocalBinder extends Binder {
         public GeolocationService getService() {
-            // Return this instance of LocalService so clients can call public methods
+
             return GeolocationService.this;
         }
     }
 
     private class CustomLocationListener implements LocationListener{
         public void onLocationChanged(Location location) {
-            // Called when a new location is found by the network location provider.
+
             if(isBetterLocation(location, mCurrentlyUsedLocation)){
                 mCurrentlyUsedLocation = location;
             }
@@ -155,7 +155,7 @@ public class GeolocationService extends Service {
         public void onProviderDisabled(String provider) {}
     }
 
-    // simple getters
+    // gettery
     public double getLatitude(){
         if(mCurrentlyUsedLocation != null){
             latitude = mCurrentlyUsedLocation.getLatitude();

@@ -1,11 +1,9 @@
-package pl.robertmikolaj.techdemo.helper.googleplaces.Interfaces;
+package pl.robertmikolaj.techdemo.helper.googleplaces.POJOs;
 
 import java.io.Serializable;
 import java.util.List;
 
 import com.google.api.client.util.Key;
-
-import pl.robertmikolaj.techdemo.helper.googleplaces.Interfaces.Place;
 
 /** Implement this class from "Serializable"
  * So that you can pass this class Object to another using Intents

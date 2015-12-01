@@ -15,8 +15,8 @@ import com.google.api.client.json.jackson.JacksonFactory;
 
 import java.io.IOException;
 
-import pl.robertmikolaj.techdemo.helper.googleplaces.Interfaces.PlaceDetails;
-import pl.robertmikolaj.techdemo.helper.googleplaces.Interfaces.PlacesList;
+import pl.robertmikolaj.techdemo.R;
+import pl.robertmikolaj.techdemo.helper.googleplaces.POJOs.PlacesList;
 
 /**
  * Created by Spajki on 2015-11-29.
@@ -26,19 +26,18 @@ import pl.robertmikolaj.techdemo.helper.googleplaces.Interfaces.PlacesList;
 /*@SuppressWarnings("deprecation")*/
 public class GooglePlaces {
 
-
+        // z tym retrofitem będę jeszcze próbował, poki co zostawiam jak jest
     private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
 
-    private static final String API_KEY = "AIzaSyC0I54Mkd03iUhcftnda5m8P3WZlHAxWJk";
 
-    // jakies urlsy o ktorych nei mam pojecia
+
+    // Google places URL
     private static final String PLACES_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/search/json?";
-    private static final String PLACES_TEXT_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/search/json?";
-    private static final String PLACES_DETAILS_URL = "https://maps.googleapis.com/maps/api/place/details/json?";
 
-    private double mLatitude;
-    private double mLongtitude;
-    private double mRadius;
+
+     double mLatitude;
+     double mLongtitude;
+    double mRadius;
 
     public PlacesList search(double latitude, double longtitude, double radius, String types)
             throws Exception {
@@ -52,7 +51,7 @@ public class GooglePlaces {
             HttpRequestFactory httpRequestFactory = createRequestFactory(HTTP_TRANSPORT);
             HttpRequest request = httpRequestFactory
                     .buildGetRequest(new GenericUrl(PLACES_SEARCH_URL));
-            request.getUrl().put("key", API_KEY);
+            request.getUrl().put("key", R.string.API_KEY);
             request.getUrl().put("location", mLatitude + "," + mLongtitude);
             request.getUrl().put("radius", mRadius); // w metrach
             request.getUrl().put("sensor", false);
@@ -69,26 +68,6 @@ public class GooglePlaces {
         }
 
     }
-
-    public PlaceDetails getPlaceDetails(String reference) throws Exception {
-        try{
-            HttpRequestFactory httpRequestFactory = createRequestFactory(HTTP_TRANSPORT);
-            HttpRequest request = httpRequestFactory
-                    .buildGetRequest(new GenericUrl(PLACES_DETAILS_URL));
-            request.getUrl().put("key", API_KEY);
-            request.getUrl().put("reference", reference);
-            request.getUrl().put("sensor", "false");
-
-
-
-            return request.execute().parseAs(PlaceDetails.class);
-        }catch(HttpResponseException e){
-            Log.e("Error in Details: ", e.getMessage());
-            throw e;
-        }
-
-    }
-
 
     public static HttpRequestFactory createRequestFactory(final HttpTransport transport){
         return transport.createRequestFactory(new HttpRequestInitializer() {

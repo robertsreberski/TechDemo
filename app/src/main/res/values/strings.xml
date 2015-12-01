@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">TechDemo</string>
+    <string name="API_KEY">AIzaSyC0I54Mkd03iUhcftnda5m8P3WZlHAxWJk</string>
+    <string name="loc_failed">Nie udało się znaleźć Twojej lokalizacji. Spróbuj ponownie</string>
 </resources>

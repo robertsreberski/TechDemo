@@ -1,48 +1,22 @@
 package pl.robertmikolaj.techdemo;
 
-import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.ImageFormat;
-import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.hardware.Camera;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraDevice;
-import android.hardware.camera2.CameraManager;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
-import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.ListAdapter;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
-
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,8 +27,8 @@ import pl.robertmikolaj.techdemo.helper.GeolocationService;
 import pl.robertmikolaj.techdemo.helper.MeasurmentEngine;
 import pl.robertmikolaj.techdemo.helper.SoundMsgHandler;
 import pl.robertmikolaj.techdemo.helper.googleplaces.GooglePlaces;
-import pl.robertmikolaj.techdemo.helper.googleplaces.Interfaces.Place;
-import pl.robertmikolaj.techdemo.helper.googleplaces.Interfaces.PlacesList;
+import pl.robertmikolaj.techdemo.helper.googleplaces.POJOs.Place;
+import pl.robertmikolaj.techdemo.helper.googleplaces.POJOs.PlacesList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     Camera camera = null;
@@ -196,12 +170,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         final Double pTakenDecibels = currentDecibels;
-        if(mBound) {
-            Log.d("ok", Double.toString(mService.getCurrentLocation().getLatitude()));
-        }
+        if(mService.getCurrentLocation() != null){
+
         lat = mService.getCurrentLocation().getLatitude();
+
         lng = mService.getCurrentLocation().getLongitude();
+
         new LoadPlaces().execute();
+        }else{
+            Toast.makeText(getApplicationContext() ,R.string.loc_failed, Toast.LENGTH_SHORT).show();
+        }
        /* camera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
@@ -238,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            // Jesli sie podepniemy, od razu startuje lokalizacje
             GeolocationService.LocalBinder binder = (GeolocationService.LocalBinder) service;
             mService = binder.getService();
             mBound = true;
@@ -263,21 +241,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
          * getting Places JSON
          */
         protected String doInBackground(String... args) {
-            // creating Places class object
+
+
             googlePlaces = new GooglePlaces();
 
             try {
-                // Separeate your place types by PIPE symbol "|"
-                // If you want all types places make it as null
-                // Check list of types supported by google
-                //
-                String types = "gym|stadium|school|university"; // Listing places only cafes, restaurants
+                // tutaj typy, najlepiej tylko stadiums ale dalem reszte zeby zawsze cos sie pojawilo
+                String types = "gym|stadium|school|university";
 
-                // Radius in meters - increase this value if you don't find any places
-                double radius = 500; // 500 meters
+                // W metrach, promien poszukiwan
+                double radius = 500;
 
                Log.d("ok", lat + "" + lng);
-                // get nearest places
+
                 placesList = googlePlaces.search(lat,
                         lng, radius, types);
 
@@ -306,15 +282,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 for (Place p : placesList.results) {
                                     HashMap<String, String> map = new HashMap<String, String>();
 
-                                    // Place reference won't display in listview - it will be hidden
-                                    // Place reference is used to get "place full details"
-                                    map.put(KEY_REFERENCE, p.reference);
+
 
                                     // Place name
                                     map.put(KEY_NAME, p.name);
 
 
-                                    // adding HashMap to ArrayList
+                                    // Pozniej bede mmogl sie bawic z ta arraylista
                                     placesListItems.add(map);
                                     Toast.makeText(getApplicationContext(), p.name, Toast.LENGTH_SHORT).show();
                                 }
