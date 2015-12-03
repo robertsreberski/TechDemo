@@ -2,21 +2,21 @@ package pl.robertmikolaj.techdemo.helper.googleplaces;
 
 import android.util.Log;
 
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestFactory;
-import com.google.api.client.http.HttpRequestInitializer;
-import com.google.api.client.http.HttpResponseException;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
 
-import com.google.api.client.json.JsonObjectParser;
-import com.google.api.client.json.jackson.JacksonFactory;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.List;
 
 import pl.robertmikolaj.techdemo.R;
+
 import pl.robertmikolaj.techdemo.helper.googleplaces.POJOs.PlacesList;
+import retrofit.Call;
+import retrofit.JacksonConverterFactory;
+import retrofit.Retrofit;
+import retrofit.http.GET;
+import retrofit.http.Query;
 
 /**
  * Created by Spajki on 2015-11-29.
@@ -27,17 +27,33 @@ import pl.robertmikolaj.techdemo.helper.googleplaces.POJOs.PlacesList;
 public class GooglePlaces {
 
         // z tym retrofitem będę jeszcze próbował, poki co zostawiam jak jest
-    private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
+   // private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
 
 
 
     // Google places URL
     private static final String PLACES_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/search/json?";
 
+    private static final String API_KEY = "AIzaSyC0I54Mkd03iUhcftnda5m8P3WZlHAxWJk";
+    //retrofit try:
+    private static final String PLACES_SEARCH_API_URL ="https://maps.googleapis.com";
 
      double mLatitude;
      double mLongtitude;
     double mRadius;
+
+
+    public interface ApiPlaces {
+    @GET("/maps/api/place/search/json?")
+        Call<PlacesList> getPlaces(@Query("key") String API_KEY,
+                                    @Query("location") String location,
+                                    @Query("radius") double radius,
+                                    @Query("sensor") boolean sensor,
+                                    @Query(value = "types", encoded=true) String types);
+
+
+    }
+
 
     public PlacesList search(double latitude, double longtitude, double radius, String types)
             throws Exception {
@@ -45,7 +61,17 @@ public class GooglePlaces {
         this.mLatitude = latitude;
         this.mLongtitude = longtitude;
         this.mRadius = radius;
+        String encodedTypes = URLEncoder.encode(types, "UTF-8");
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(PLACES_SEARCH_API_URL).addConverterFactory(JacksonConverterFactory.create()).build();
 
+        ApiPlaces places = retrofit.create(ApiPlaces.class);
+
+        Call<PlacesList> call = places.getPlaces(API_KEY, mLatitude + "," + mLongtitude, mRadius, false, encodedTypes);
+
+        PlacesList placesList = call.execute().body();
+        Log.d("Places status", "" + placesList.status);
+
+/*
         try {
 
             HttpRequestFactory httpRequestFactory = createRequestFactory(HTTP_TRANSPORT);
@@ -67,19 +93,32 @@ public class GooglePlaces {
             return null;
         }
 
+        */
+
+
+
+
+        return placesList;
+
+
+
     }
 
-    public static HttpRequestFactory createRequestFactory(final HttpTransport transport){
+    /*public static HttpRequestFactory createRequestFactory(final HttpTransport transport){
         return transport.createRequestFactory(new HttpRequestInitializer() {
             @Override
             public void initialize(HttpRequest httpRequest) throws IOException {
                 JsonObjectParser parser = new JsonObjectParser(new JacksonFactory());
                 httpRequest.setParser(parser);
             }
-        });
+        });*/
 
     }
 
 
 
-}
+
+
+
+
+

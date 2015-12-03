@@ -247,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             try {
                 // tutaj typy, najlepiej tylko stadiums ale dalem reszte zeby zawsze cos sie pojawilo
-                String types = "gym|stadium|school|university";
+                String types = "stadium|school";
 
                 // W metrach, promien poszukiwan
                 double radius = 500;
